@@ -85,7 +85,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, uptime: process.uptime
 
 // ─── Landing page → / ────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─── HUD App → /app ──────────────────────────────────────────────────────────
@@ -216,7 +216,7 @@ io.on('connection', socket => {
 
 // ─── Catch-all → landing ──────────────────────────────────────────────────────
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // ─── Start ────────────────────────────────────────────────────────────────────

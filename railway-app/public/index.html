@@ -2,593 +2,251 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="theme-color" content="#0d1117"/>
-<title>⚡ Engineer Control Center</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Engineer Control Center — by MIRASCOPES</title>
 <style>
-  /* ─── Base ─────────────────────────────────── */
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
   :root {
-    --bg0: #0d1117; --bg1: #161b22; --bg2: #21262d;
-    --primary: #00ff88; --warn: #f0a500; --error: #ff4560;
-    --info: #58a6ff; --muted: #8b949e; --border: #30363d;
-    --pen-radius: 14px;     /* large for pen tap */
-    --btn-h: 56px;          /* tall buttons for stylus */
-    --font: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a28;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: rgba(124,58,237,0.25);
   }
-  html, body { height: 100%; background: var(--bg0); color: #e6edf3;
-    font-family: var(--font); font-size: 14px; touch-action: manipulation; }
-  body { display: flex; flex-direction: column; overflow: hidden; }
 
-  /* ─── Scrollbar ─────────────────────────────── */
-  ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--bg1); }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-  /* ─── Pen ink ripple ────────────────────────── */
-  @keyframes ripple { from { transform: scale(0); opacity: 0.6; } to { transform: scale(4); opacity: 0; } }
-  .ripple-host { position: relative; overflow: hidden; }
-  .ripple-circle { position: absolute; width: 40px; height: 40px; border-radius: 50%;
-    background: rgba(0,255,136,0.3); transform: scale(0); animation: ripple 0.5s ease-out forwards;
-    pointer-events: none; margin-top: -20px; margin-left: -20px; }
-
-  /* ─── Scan line ─────────────────────────────── */
-  @keyframes scan { 0%,100%{opacity:0} 50%{opacity:1} }
-  .scan-line { position: fixed; top: 0; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, var(--primary), transparent);
-    animation: scan 3s ease-in-out infinite; pointer-events: none; z-index: 9999; }
-
-  /* ─── Header ────────────────────────────────── */
-  #header { background: var(--bg1); border-bottom: 1px solid var(--border);
-    display: flex; flex-direction: column; flex-shrink: 0; }
-  .hud-topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; }
-  .hud-title { color: var(--primary); font-weight: 700; font-size: 13px; letter-spacing: 2px; }
-  .hud-meta { color: var(--muted); font-size: 11px; margin-left: 8px; }
-  .hud-actions { display: flex; gap: 8px; align-items: center; }
-  .load-bar { height: 3px; background: var(--bg2); }
-  .load-bar-fill { height: 100%; transition: width 0.5s ease, background 0.3s; }
-  .tabs { display: flex; padding: 0 8px; overflow-x: auto; gap: 0; }
-  .tab { padding: 12px 16px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
-    border: none; background: none; color: var(--muted); cursor: pointer;
-    border-bottom: 2px solid transparent; transition: all 0.2s;
-    min-height: 44px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .tab:hover { color: #e6edf3; }
-  .tab.active { color: var(--primary); border-bottom-color: var(--primary); }
-
-  /* ─── Button — pen-sized ─────────────────────── */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-    height: var(--btn-h); padding: 0 20px; border-radius: var(--pen-radius);
-    border: 1.5px solid var(--border); background: var(--bg2); color: #e6edf3;
-    font-family: var(--font); font-size: 13px; font-weight: 600; letter-spacing: 1px;
-    cursor: pointer; transition: all 0.15s; user-select: none; -webkit-user-select: none; }
-  .btn:hover { border-color: var(--primary); color: var(--primary); background: rgba(0,255,136,0.06); }
-  .btn:active { transform: scale(0.97); }
-  .btn-sm { height: 40px; padding: 0 14px; font-size: 11px; }
-  .btn-xs { height: 32px; padding: 0 10px; font-size: 10px; }
-  .btn-primary { background: var(--primary); color: #0d1117; border-color: var(--primary); }
-  .btn-primary:hover { background: #00cc6e; border-color: #00cc6e; color: #0d1117; }
-  .btn-danger  { background: var(--error); color: #fff; border-color: var(--error); }
-  .btn-outline { background: transparent; }
-  .btn-full { width: 100%; }
-  .btn-icon { width: var(--btn-h); padding: 0; }
-
-  /* ─── Panel ─────────────────────────────────── */
-  #main { flex: 1; overflow: hidden; display: flex; flex-direction: column; }
-  .panel { display: none; flex: 1; overflow-y: auto; padding: 16px; flex-direction: column; gap: 16px; }
-  .panel.active { display: flex; }
-  .card { background: var(--bg1); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-  .card-title { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--muted); margin-bottom: 12px; }
-  .section-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-
-  /* ─── Auth ──────────────────────────────────── */
-  #auth-screen { position: fixed; inset: 0; background: var(--bg0);
-    display: flex; align-items: center; justify-content: center; z-index: 100; }
-  .auth-box { background: var(--bg1); border: 1px solid var(--border); border-radius: 20px;
-    padding: 32px 28px; width: min(92vw, 400px); display: flex; flex-direction: column; gap: 20px; }
-  .auth-title { font-size: 16px; font-weight: 700; color: var(--primary); text-align: center; letter-spacing: 2px; }
-  .auth-sub { font-size: 11px; color: var(--muted); text-align: center; }
-  .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .auth-tab { height: 44px; border-radius: 10px; border: 1.5px solid var(--border);
-    background: var(--bg2); color: var(--muted); font-family: var(--font); font-size: 12px;
-    font-weight: 600; cursor: pointer; letter-spacing: 1px; transition: all 0.15s; }
-  .auth-tab.active { border-color: var(--primary); color: var(--primary); background: rgba(0,255,136,0.08); }
-  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  #qr-img { border-radius: 12px; border: 2px solid var(--border); width: 200px; height: 200px; }
-  .qr-countdown { font-size: 11px; color: var(--muted); }
-  .key-input { width: 100%; height: 56px; background: var(--bg2); border: 1.5px solid var(--border);
-    border-radius: var(--pen-radius); color: #e6edf3; font-family: var(--font); font-size: 15px;
-    font-weight: 700; padding: 0 16px; letter-spacing: 3px; text-transform: uppercase;
-    text-align: center; outline: none; transition: border-color 0.2s; }
-  .key-input:focus { border-color: var(--primary); }
-  .key-input::placeholder { letter-spacing: 1px; text-transform: none; color: var(--muted); font-size: 13px; }
-  .auth-error { color: var(--error); font-size: 12px; text-align: center; min-height: 18px; }
-  .auth-success { color: var(--primary); font-size: 13px; text-align: center; font-weight: 700; }
-  @keyframes granted { 0%{opacity:0;transform:scale(0.8)} 100%{opacity:1;transform:scale(1)} }
-  .granted-anim { animation: granted 0.4s ease-out; }
-
-  /* ─── Device grid ───────────────────────────── */
-  .device-btn { display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 6px; height: 90px; border-radius: 14px; border: 1.5px solid var(--border);
-    background: var(--bg2); cursor: pointer; transition: all 0.2s; user-select: none;
-    position: relative; overflow: hidden; }
-  .device-btn.on { border-color: var(--primary); background: rgba(0,255,136,0.08); }
-  .device-btn.on .dev-name { color: var(--primary); }
-  .device-btn.on .dev-watts { color: var(--primary); opacity: 0.7; }
-  @keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(0,255,136,0.3)} 50%{box-shadow:0 0 0 6px rgba(0,255,136,0)} }
-  .device-btn.on { animation: pulse-border 2s infinite; }
-  .dev-icon { font-size: 22px; line-height: 1; }
-  .dev-name { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-align: center; color: var(--muted); }
-  .dev-watts { font-size: 10px; color: var(--muted); }
-  .dev-badge { position: absolute; top: 7px; right: 7px; width: 8px; height: 8px;
-    border-radius: 50%; background: var(--border); }
-  .device-btn.on .dev-badge { background: var(--primary); box-shadow: 0 0 6px var(--primary); }
-
-  /* ─── Stats bars ─────────────────────────────── */
-  .stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .stat-label { width: 130px; font-size: 11px; color: var(--muted); flex-shrink: 0; }
-  .stat-bar-bg { flex: 1; height: 10px; background: var(--bg2); border-radius: 5px; overflow: hidden; }
-  .stat-bar-fill { height: 100%; border-radius: 5px; transition: width 0.5s ease; }
-  .stat-val { width: 60px; text-align: right; font-size: 11px; font-weight: 700; }
-
-  /* ─── Faucet ─────────────────────────────────── */
-  .flow-selector { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; }
-  .flow-opt { height: 52px; border-radius: 12px; border: 1.5px solid var(--border);
-    background: var(--bg2); color: var(--muted); font-family: var(--font); font-size: 12px;
-    font-weight: 600; cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
-  .flow-opt.active { border-color: var(--info); color: var(--info); background: rgba(88,166,255,0.08); }
-  .faucet-activate { width: 160px; height: 160px; border-radius: 50%; border: 3px solid var(--border);
-    background: var(--bg2); cursor: pointer; font-family: var(--font); font-size: 14px;
-    font-weight: 700; letter-spacing: 2px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;
-    position: relative; overflow: hidden; user-select: none; }
-  .faucet-activate:hover { border-color: var(--info); color: var(--info); }
-  .faucet-activate.flowing { border-color: var(--info); color: var(--info);
-    box-shadow: 0 0 30px rgba(88,166,255,0.2); animation: pulse-border 1.5s infinite; }
-  @keyframes water-drop { 0%{transform:translateY(-10px);opacity:0} 100%{transform:translateY(20px);opacity:0.6} }
-  .faucet-activate.flowing::after { content:'💧'; position:absolute; font-size:22px;
-    animation: water-drop 1s infinite; }
-  .metric-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
-  .metric-card { background: var(--bg2); border-radius: 12px; padding: 14px;
-    display: flex; flex-direction: column; gap: 4px; }
-  .metric-label { font-size: 10px; color: var(--muted); letter-spacing: 1px; }
-  .metric-val { font-size: 18px; font-weight: 700; }
-  .metric-unit { font-size: 10px; color: var(--muted); }
-
-  /* ─── Footer ─────────────────────────────────── */
-  #footer { background: var(--bg1); border-top: 1px solid var(--border);
-    padding: 8px 16px; display: flex; gap: 20px; flex-shrink: 0; flex-wrap: wrap; }
-  .foot-stat { display: flex; flex-direction: column; gap: 1px; }
-  .foot-key { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
-  .foot-val { font-size: 13px; font-weight: 700; }
-
-  /* ─── Lock screen overlay ────────────────────── */
-  #lock-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92);
-    display: none; align-items: center; justify-content: center; z-index: 99;
-    flex-direction: column; gap: 16px; }
-  #lock-overlay.visible { display: flex; }
-  .lock-icon { font-size: 48px; }
-  .lock-text { color: var(--muted); font-size: 13px; letter-spacing: 2px; }
-
-  /* ─── Toast ──────────────────────────────────── */
-  #toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2);
-    border: 1px solid var(--border); border-radius: 12px; padding: 12px 20px;
-    font-size: 12px; color: #e6edf3; z-index: 999; opacity: 0; pointer-events: none;
-    transition: opacity 0.3s; max-width: 280px; }
-  #toast.show { opacity: 1; }
-
-  /* ─── Pen cursor ─────────────────────────────── */
-  @media (pointer: fine) {
-    body { cursor: crosshair; }
-    .btn, .device-btn, .flow-opt, .faucet-activate, .auth-tab, .tab { cursor: pointer; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  .logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent2); letter-spacing:2px; }
+  .nav-badge { background:rgba(124,58,237,0.2); border:1px solid var(--border); padding:0.3rem 0.8rem; border-radius:100px; font-size:0.75rem; color:var(--accent2); font-family:'Space Mono',monospace; }
+
+  .hero {
+    position:relative; z-index:1;
+    padding:10rem 2rem 6rem;
+    text-align:center;
+    max-width:900px;
+    margin:0 auto;
+  }
+  .hero-tag { display:inline-block; background:rgba(124,58,237,0.15); border:1px solid var(--border); color:var(--accent2); padding:0.4rem 1rem; border-radius:100px; font-size:0.8rem; font-family:'Space Mono',monospace; letter-spacing:2px; margin-bottom:2rem; }
+  .hero h1 { font-size:clamp(2.5rem,7vw,5rem); font-weight:700; line-height:1.1; margin-bottom:1.5rem; background:linear-gradient(135deg,#fff 0%,var(--accent2) 60%,var(--cyan) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .hero p { font-size:1.2rem; color:var(--muted); max-width:600px; margin:0 auto 3rem; line-height:1.7; }
+
+  .features { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:4rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+  .feature-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:transform 0.2s,border-color 0.2s; }
+  .feature-card:hover { transform:translateY(-4px); border-color:var(--accent); }
+  .feature-icon { font-size:2rem; margin-bottom:1rem; }
+  .feature-card h3 { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
+  .feature-card p { color:var(--muted); font-size:0.9rem; line-height:1.6; }
+
+  .pricing-section { position:relative; z-index:1; max-width:600px; margin:2rem auto; padding:2rem; text-align:center; }
+  .pricing-section h2 { font-size:2rem; font-weight:700; margin-bottom:0.5rem; }
+  .pricing-section .sub { color:var(--muted); margin-bottom:2.5rem; }
+
+  .price-card { background:var(--card); border:2px solid var(--accent); border-radius:24px; padding:3rem 2rem; position:relative; overflow:hidden; }
+  .price-card::before { content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:200px; height:200px; background:radial-gradient(circle,rgba(124,58,237,0.3),transparent 70%); pointer-events:none; }
+  .best-tag { position:absolute; top:1rem; right:1rem; background:var(--accent); color:white; padding:0.3rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:600; }
+
+  .price-amount { font-family:'Space Mono',monospace; font-size:3.5rem; font-weight:700; color:white; margin-bottom:0.25rem; }
+  .price-amount span { font-size:1.5rem; color:var(--muted); }
+  .price-desc { color:var(--muted); margin-bottom:2rem; font-size:0.95rem; }
+
+  .price-features { list-style:none; margin-bottom:2.5rem; text-align:left; }
+  .price-features li { padding:0.5rem 0; color:var(--text); font-size:0.95rem; display:flex; align-items:center; gap:0.75rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .price-features li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
+
+  .btn-buy { display:inline-block; width:100%; padding:1.1rem 2rem; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s,transform 0.1s; letter-spacing:0.5px; touch-action:manipulation; }
+  .btn-buy:hover { opacity:0.9; }
+  .btn-buy:active { transform:scale(0.98); }
+
+  .secure-note { margin-top:1rem; font-size:0.8rem; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:0.4rem; }
+
+  #download-section { display:none; margin-top:1.5rem; }
+  #download-section.visible { display:block; }
+  .unlock-box { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.4); border-radius:14px; padding:1.5rem; margin-bottom:1rem; text-align:center; }
+  .unlock-box h3 { color:var(--green); margin-bottom:0.5rem; font-size:1.1rem; }
+  .unlock-box p { color:var(--muted); font-size:0.9rem; }
+  .btn-download { display:inline-block; width:100%; padding:1rem 2rem; background:var(--green); color:#0a0a0f; font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s; touch-action:manipulation; }
+  .btn-download:hover { opacity:0.85; }
+
+  .key-form { margin-top:2rem; padding-top:2rem; border-top:1px solid var(--border); }
+  .key-form p { color:var(--muted); font-size:0.85rem; margin-bottom:0.75rem; }
+  .key-input-row { display:flex; gap:0.5rem; }
+  .key-input { flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white; padding:0.75rem 1rem; border-radius:10px; font-family:'Space Mono',monospace; font-size:0.9rem; outline:none; transition:border-color 0.2s; }
+  .key-input:focus { border-color:var(--accent); }
+  .btn-unlock { padding:0.75rem 1.25rem; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif; touch-action:manipulation; white-space:nowrap; }
+  .key-error { color:#f87171; font-size:0.8rem; margin-top:0.5rem; display:none; }
+
+  footer { position:relative; z-index:1; text-align:center; padding:3rem 2rem; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--border); margin-top:4rem; }
+  footer strong { color:var(--accent2); }
 </style>
 </head>
 <body>
 
-<div class="scan-line"></div>
-<div id="toast"></div>
+<nav>
+  <div class="logo">MIRASCOPES</div>
+  <div class="nav-badge">ENG CONTROL CENTER</div>
+</nav>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen">
-  <div class="auth-box">
-    <div class="auth-title">⚡ ENGINEER HUD</div>
-    <div class="auth-sub">Authenticate to access the control center</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active ripple-host" onclick="switchAuthTab('qr')" id="tab-qr">📷 QR CODE</button>
-      <button class="auth-tab ripple-host" onclick="switchAuthTab('key')" id="tab-key">🔑 AUTH KEY</button>
-    </div>
-    <!-- QR Tab -->
-    <div id="qr-pane" class="qr-wrap">
-      <img id="qr-img" src="" alt="Loading QR..."/>
-      <div class="qr-countdown" id="qr-timer">Refreshes in 30s</div>
-      <button class="btn btn-sm ripple-host" onclick="loadQR()">🔄 Refresh QR</button>
-      <div class="auth-sub">Scan with your phone's camera or any QR app</div>
-    </div>
-    <!-- Key Tab -->
-    <div id="key-pane" style="display:none; flex-direction:column; gap:12px;">
-      <input class="key-input" id="key-input" type="text" placeholder="Enter your ENG-XXXXXX key"
-        maxlength="10" onkeydown="if(event.key==='Enter')verifyKey()"/>
-      <button class="btn btn-primary btn-full ripple-host" onclick="verifyKey()">🔓 AUTHENTICATE</button>
-    </div>
-    <div class="auth-error" id="auth-error"></div>
+<section class="hero">
+  <div class="hero-tag">⚡ PROFESSIONAL ENGINEER TOOLKIT</div>
+  <h1>Your Studio.<br/>Under Control.</h1>
+  <p>A powerful local-first engineer control center. Manage devices, monitor energy, control your smart faucet — all from one dark HUD designed for digital pens.</p>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="feature-icon">🖊️</div>
+    <h3>Pen &amp; Stylus First</h3>
+    <p>Built for Surface Pen, Apple Pencil, Wacom and any digital stylus. Large targets, ink ripple effects, precision cursor.</p>
   </div>
-</div>
-
-<!-- LOCK OVERLAY -->
-<div id="lock-overlay">
-  <div class="lock-icon">🔒</div>
-  <div class="lock-text">HUD LOCKED</div>
-  <button class="btn btn-primary ripple-host" onclick="unlockFromOverlay()">🔓 UNLOCK</button>
-</div>
-
-<!-- HEADER -->
-<div id="header">
-  <div class="hud-topbar">
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="hud-title">⚡ ENGINEER CTRL CENTER</span>
-      <span class="hud-meta">HOME STUDIO · v2.0</span>
-    </div>
-    <div class="hud-actions">
-      <span id="watt-disp" style="font-weight:700;font-size:12px;color:var(--primary)">0W</span>
-      <button class="btn btn-xs btn-outline ripple-host" style="border-color:var(--primary);color:var(--primary)" onclick="toggleAll(true)">⚡ ON</button>
-      <button class="btn btn-xs btn-outline ripple-host" style="border-color:var(--error);color:var(--error)" onclick="toggleAll(false)">⏹ OFF</button>
-      <button class="btn btn-xs btn-outline ripple-host" style="color:var(--muted)" onclick="lockHUD()" title="Lock HUD">🔒</button>
-    </div>
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>Energy Control Panel</h3>
+    <p>Monitor and toggle 10 studio devices. Real-time cost calculator, master on/off switch, live power tracking.</p>
   </div>
-  <div class="load-bar"><div class="load-bar-fill" id="load-fill"></div></div>
-  <div class="tabs">
-    <button class="tab active ripple-host" onclick="switchTab('energy')" id="t-energy">⚡ ENERGY HUB</button>
-    <button class="tab ripple-host" onclick="switchTab('faucet')" id="t-faucet">💧 FAUCET SYS</button>
-    <button class="tab ripple-host" onclick="switchTab('stats')"  id="t-stats">📊 SYS STATS</button>
+  <div class="feature-card">
+    <div class="feature-icon">💧</div>
+    <h3>Smart Faucet</h3>
+    <p>Live H₂O chemistry display, session tracking, and water flow control integrated directly in the HUD.</p>
   </div>
-</div>
-
-<!-- MAIN -->
-<div id="main">
-
-  <!-- ENERGY PANEL -->
-  <div class="panel active" id="panel-energy">
-    <div class="card">
-      <div class="card-title">DEVICES — CLICK OR TAP TO TOGGLE</div>
-      <div class="section-grid" id="device-grid"></div>
-    </div>
-    <div class="card" id="energy-summary"></div>
+  <div class="feature-card">
+    <div class="feature-icon">🔒</div>
+    <h3>Secure Auth</h3>
+    <p>QR code + personal key authentication. Session persists across tabs. Lock with one tap.</p>
   </div>
+  <div class="feature-card">
+    <div class="feature-icon">🚫💸</div>
+    <h3>Zero Server Costs</h3>
+    <p>Runs 100% on your local machine. All data stored in a local JSON file. No subscriptions, no cloud fees.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📡</div>
+    <h3>Real-Time Sync</h3>
+    <p>WebSocket-powered live updates across all open tabs on your local network instantly.</p>
+  </div>
+</section>
 
-  <!-- FAUCET PANEL -->
-  <div class="panel" id="panel-faucet">
-    <div class="card">
-      <div class="card-title">FLOW RATE</div>
-      <div class="flow-selector">
-        <button class="flow-opt ripple-host" id="f-slow"   onclick="setFlow('slow')">🐢 SLOW<br><small>1.5 L/min</small></button>
-        <button class="flow-opt active ripple-host" id="f-normal" onclick="setFlow('normal')">💧 NORMAL<br><small>8 L/min</small></button>
-        <button class="flow-opt ripple-host" id="f-fast"   onclick="setFlow('fast')">⚡ FAST<br><small>20 L/min</small></button>
+<section class="pricing-section">
+  <h2>Get the App</h2>
+  <p class="sub">One-time purchase. Yours forever.</p>
+
+  <div class="price-card">
+    <div class="best-tag">⚡ LIFETIME</div>
+
+    <div class="price-amount"><span>€</span>29</div>
+    <div class="price-desc">One-time · No subscription · Instant download</div>
+
+    <ul class="price-features">
+      <li>Full Engineer HUD app (Node.js + HTML)</li>
+      <li>Pen &amp; stylus optimized interface</li>
+      <li>Energy panel + smart faucet panel</li>
+      <li>Local backend — zero server costs</li>
+      <li>All future updates included</li>
+      <li>Windows, Mac &amp; Linux compatible</li>
+    </ul>
+
+    <a href="https://buy.stripe.com/REPLACE_WITH_YOUR_STRIPE_LINK" class="btn-buy" id="buy-btn">
+      Buy Now — €29
+    </a>
+
+    <div class="secure-note">🔒 Secure payment · You receive a download key by email</div>
+
+    <!-- Existing customers -->
+    <div class="key-form">
+      <p>Already purchased? Enter your access key:</p>
+      <div class="key-input-row">
+        <input class="key-input" id="access-key-input" type="text" placeholder="ENG-XXXXXX" maxlength="20"/>
+        <button class="btn-unlock" onclick="unlockDownload()">Unlock</button>
       </div>
+      <div class="key-error" id="key-error">❌ Invalid key — check your purchase email.</div>
     </div>
-    <div class="card" style="display:flex;flex-direction:column;align-items:center;gap:16px;">
-      <div class="card-title" style="align-self:flex-start">FAUCET CONTROL</div>
-      <button class="faucet-activate ripple-host" id="faucet-btn" onclick="toggleFaucet()">
-        <span style="font-size:28px">🚿</span>
-        <span id="faucet-label">ACTIVATE</span>
-        <span id="faucet-timer" style="font-size:11px;color:var(--muted)"></span>
-      </button>
-      <div class="metric-grid" id="faucet-metrics">
-        <div class="metric-card"><div class="metric-label">LITERS</div><div class="metric-val" id="m-liters">0.000</div></div>
-        <div class="metric-card"><div class="metric-label">GALLONS</div><div class="metric-val" id="m-gallons">0.000</div></div>
-        <div class="metric-card"><div class="metric-label">H₂ (g)</div><div class="metric-val" id="m-h2">0.000</div></div>
-        <div class="metric-card"><div class="metric-label">O₂ (g)</div><div class="metric-val" id="m-o2">0.000</div></div>
+
+    <!-- Revealed after valid key -->
+    <div id="download-section">
+      <div class="unlock-box">
+        <h3>✅ Access Granted!</h3>
+        <p>Your download is ready. Unzip and double-click START.bat to run.</p>
       </div>
-      <button class="btn btn-sm btn-outline ripple-host" id="save-session-btn" style="display:none" onclick="saveSession()">💾 SAVE SESSION</button>
-    </div>
-    <div class="card" id="session-history"></div>
-  </div>
-
-  <!-- STATS PANEL -->
-  <div class="panel" id="panel-stats">
-    <div class="card" id="stats-breakdown"></div>
-    <div class="card" id="stats-cost"></div>
-    <div class="card">
-      <div class="card-title">ALL DEVICES</div>
-      <div id="stats-table"></div>
+      <a href="#" class="btn-download" id="download-btn">⬇️ Download Engineer Control Center</a>
     </div>
   </div>
-</div>
+</section>
 
-<!-- FOOTER -->
-<div id="footer">
-  <div class="foot-stat"><div class="foot-key">LOAD</div><div class="foot-val" id="f-load">0W / 3000W</div></div>
-  <div class="foot-stat"><div class="foot-key">COST/HR</div><div class="foot-val" id="f-cost">$0.000</div></div>
-  <div class="foot-stat"><div class="foot-key">WATER</div><div class="foot-val" id="f-water">0.00 L</div></div>
-  <div class="foot-stat"><div class="foot-key">STATUS</div><div class="foot-val" id="f-status" style="color:var(--primary)">ONLINE</div></div>
-</div>
+<footer>
+  Built by <strong>MIRASCOPES</strong> · Engineer Control Center v2.0<br/>
+  <small style="opacity:0.5">Local-first · No cloud · Your data stays yours</small>
+</footer>
 
-<script src="/socket.io/socket.io.js"></script>
 <script>
-// ─── State ────────────────────────────────────────────────────────────────────
-let token = sessionStorage.getItem('eng_token') || '';
-let devices = [];
-let settings = { maxWatts: 3000, costPerKwh: 0.13, currency: 'USD' };
-let faucetOn = false, faucetInterval = null, faucetSeconds = 0;
-let totalLiters = 0;
-const FLOW = { slow: 1.5/60, normal: 8/60, fast: 20/60 }; // L/s
-let curFlow = 'normal';
-let qrInterval = null, qrCountdown = 30;
-let faucetSessions = [];
-
-// ─── Pen ripple ────────────────────────────────────────────────────────────────
-document.addEventListener('pointerdown', e => {
-  const host = e.target.closest('.ripple-host');
-  if (!host) return;
-  const r = document.createElement('div');
-  r.className = 'ripple-circle';
-  const rect = host.getBoundingClientRect();
-  r.style.left = (e.clientX - rect.left) + 'px';
-  r.style.top  = (e.clientY - rect.top)  + 'px';
-  host.appendChild(r);
-  setTimeout(() => r.remove(), 600);
-});
-
-// ─── API helpers ──────────────────────────────────────────────────────────────
-async function api(method, path, body) {
-  const r = await fetch(path, {
-    method, headers: { 'Content-Type': 'application/json', 'x-auth-token': token },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-  return r.json();
-}
-
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-async function loadQR() {
-  const res = await fetch('/api/auth/qr');
-  const data = await res.json();
-  document.getElementById('qr-img').src = data.qr;
-  qrCountdown = 30;
-  clearInterval(qrInterval);
-  qrInterval = setInterval(() => {
-    qrCountdown--;
-    document.getElementById('qr-timer').textContent = `Refreshes in ${qrCountdown}s`;
-    if (qrCountdown <= 0) loadQR();
-  }, 1000);
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('qr-pane').style.display  = tab==='qr'  ? 'flex' : 'none';
-  document.getElementById('key-pane').style.display = tab==='key' ? 'flex' : 'none';
-  document.getElementById('tab-qr').classList.toggle('active',  tab==='qr');
-  document.getElementById('tab-key').classList.toggle('active', tab==='key');
-}
-
-async function verifyKey() {
-  const key = document.getElementById('key-input').value.trim();
+async function unlockDownload() {
+  const key = document.getElementById('access-key-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('key-error');
+  errEl.style.display = 'none';
   if (!key) return;
-  const data = await api('POST', '/api/auth/verify', { key });
-  if (data.ok) {
-    token = data.token;
-    sessionStorage.setItem('eng_token', token);
-    const box = document.querySelector('.auth-box');
-    box.innerHTML = `<div class="auth-success granted-anim">✅ ACCESS GRANTED<br><br>⚡ Loading HUD...</div>`;
-    setTimeout(onAuthenticated, 1200);
-  } else {
-    document.getElementById('auth-error').textContent = '❌ Invalid key. Try again.';
+
+  try {
+    const res = await fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key })
+    });
+    const data = await res.json();
+
+    if (data.valid) {
+      document.getElementById('download-section').classList.add('visible');
+      document.getElementById('download-btn').href = '/download?key=' + encodeURIComponent(key);
+      sessionStorage.setItem('eng_key', key);
+    } else {
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.style.display = 'block';
   }
 }
 
-async function checkExistingToken() {
-  if (!token) { loadQR(); return; }
-  try {
-    const d = await api('GET', '/api/devices');
-    if (Array.isArray(d)) { onAuthenticated(); return; }
-  } catch {}
-  token = ''; sessionStorage.removeItem('eng_token'); loadQR();
+// Restore if key was already entered this session
+const saved = sessionStorage.getItem('eng_key');
+if (saved) {
+  document.getElementById('access-key-input').value = saved;
+  unlockDownload();
 }
 
-async function onAuthenticated() {
-  document.getElementById('auth-screen').style.display = 'none';
-  devices  = await api('GET', '/api/devices');
-  settings = await api('GET', '/api/settings');
-  faucetSessions = await api('GET', '/api/faucet/sessions');
-  renderDevices(); renderStats(); renderFaucetHistory();
-  updateFooter();
-}
-
-// ─── Lock ─────────────────────────────────────────────────────────────────────
-function lockHUD() { document.getElementById('lock-overlay').classList.add('visible'); }
-function unlockFromOverlay() { document.getElementById('lock-overlay').classList.remove('visible'); }
-
-// ─── Tab switching ────────────────────────────────────────────────────────────
-function switchTab(t) {
-  ['energy','faucet','stats'].forEach(id => {
-    document.getElementById('panel-'+id).classList.toggle('active', id===t);
-    document.getElementById('t-'+id).classList.toggle('active', id===t);
-  });
-  if (t==='stats') renderStats();
-}
-
-// ─── Devices ──────────────────────────────────────────────────────────────────
-const ICONS = { monitor:'🖥️', audio:'🎛️', speaker:'🔊', music:'🎹', light:'💡', ac:'❄️' };
-
-function renderDevices() {
-  const grid = document.getElementById('device-grid');
-  grid.innerHTML = devices.map(d => `
-    <button class="device-btn ripple-host ${d.active?'on':''}" id="dev-${d.id}" onclick="toggleDevice('${d.id}')">
-      <div class="dev-badge"></div>
-      <div class="dev-icon">${ICONS[d.icon]||'🔌'}</div>
-      <div class="dev-name">${d.name}</div>
-      <div class="dev-watts">${d.watts}W</div>
-    </button>`).join('');
-  renderEnergySummary();
-}
-
-async function toggleDevice(id) {
-  const d = devices.find(x=>x.id===id);
-  if (!d) return;
-  d.active = !d.active;
-  document.getElementById('dev-'+id)?.classList.toggle('on', d.active);
-  renderEnergySummary(); updateFooter();
-  api('PATCH', '/api/devices/'+id, { active: d.active });
-}
-
-async function toggleAll(on) {
-  devices.forEach(d => d.active = on);
-  renderDevices(); updateFooter();
-  api('POST', '/api/devices/all', { active: on });
-}
-
-function getTotalWatts() { return devices.filter(d=>d.active).reduce((s,d)=>s+d.watts,0); }
-
-function renderEnergySummary() {
-  const total = getTotalWatts();
-  const pct = Math.round(total/settings.maxWatts*100);
-  const fill = document.getElementById('load-fill');
-  fill.style.width = Math.max(pct,1)+'%';
-  fill.style.background = pct>80?'var(--error)':pct>50?'var(--warn)':'var(--primary)';
-  document.getElementById('watt-disp').style.color = pct>80?'var(--error)':pct>50?'var(--warn)':'var(--primary)';
-  document.getElementById('watt-disp').textContent = total+'W';
-  const costHr = (total/1000)*settings.costPerKwh;
-  document.getElementById('energy-summary').innerHTML = `
-    <div class="card-title">ENERGY SUMMARY</div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-      <div class="metric-card"><div class="metric-label">LOAD</div><div class="metric-val">${total}W</div><div class="metric-unit">${pct}% capacity</div></div>
-      <div class="metric-card"><div class="metric-label">COST/HR</div><div class="metric-val">$${costHr.toFixed(3)}</div><div class="metric-unit">@$${settings.costPerKwh}/kWh</div></div>
-      <div class="metric-card"><div class="metric-label">COST/DAY</div><div class="metric-val">$${(costHr*24).toFixed(2)}</div><div class="metric-unit">if always on</div></div>
-    </div>`;
-}
-
-// ─── Faucet ───────────────────────────────────────────────────────────────────
-function setFlow(f) {
-  curFlow = f;
-  ['slow','normal','fast'].forEach(id=>document.getElementById('f-'+id).classList.toggle('active',id===f));
-}
-
-function toggleFaucet() {
-  if (faucetOn) stopFaucet(); else startFaucet();
-}
-
-function startFaucet() {
-  faucetOn = true;
-  const btn = document.getElementById('faucet-btn');
-  btn.classList.add('flowing');
-  document.getElementById('faucet-label').textContent = 'STOP';
-  document.getElementById('save-session-btn').style.display = 'none';
-  faucetSeconds = 0;
-  faucetInterval = setInterval(() => {
-    faucetSeconds += 0.1;
-    totalLiters += FLOW[curFlow] * 0.1;
-    updateFaucetMetrics();
-  }, 100);
-}
-
-function stopFaucet() {
-  faucetOn = false;
-  clearInterval(faucetInterval);
-  const btn = document.getElementById('faucet-btn');
-  btn.classList.remove('flowing');
-  document.getElementById('faucet-label').textContent = 'ACTIVATE';
-  document.getElementById('faucet-timer').textContent = '';
-  if (totalLiters > 0) document.getElementById('save-session-btn').style.display = 'inline-flex';
-}
-
-function updateFaucetMetrics() {
-  const gal = totalLiters * 0.264172;
-  const molH2O = (totalLiters * 1000) / 18.015;
-  const h2g = molH2O * 2 * 1.008;
-  const o2g = molH2O * 0.5 * 32;
-  const m = s => s < 60 ? s.toFixed(0)+'s' : Math.floor(s/60)+'m '+Math.round(s%60)+'s';
-  document.getElementById('m-liters').textContent  = totalLiters.toFixed(3);
-  document.getElementById('m-gallons').textContent = gal.toFixed(3);
-  document.getElementById('m-h2').textContent      = h2g.toFixed(3);
-  document.getElementById('m-o2').textContent      = o2g.toFixed(3);
-  document.getElementById('faucet-timer').textContent = m(faucetSeconds);
-  document.getElementById('f-water').textContent = totalLiters.toFixed(2)+' L';
-}
-
-async function saveSession() {
-  const gal = totalLiters * 0.264172;
-  const molH2O = (totalLiters*1000)/18.015;
-  const s = {
-    liters: +totalLiters.toFixed(3), gallons: +gal.toFixed(3),
-    h2g: +(molH2O*2*1.008).toFixed(3), o2g: +(molH2O*0.5*32).toFixed(3),
-    duration: +faucetSeconds.toFixed(1), flow: curFlow,
-    ts: new Date().toLocaleTimeString(),
-  };
-  const saved = await api('POST', '/api/faucet/sessions', s);
-  faucetSessions.push(saved);
-  if (faucetSessions.length > 20) faucetSessions.shift();
-  totalLiters = 0; faucetSeconds = 0; updateFaucetMetrics();
-  document.getElementById('save-session-btn').style.display = 'none';
-  renderFaucetHistory(); toast('💾 Session saved!');
-}
-
-function renderFaucetHistory() {
-  const el = document.getElementById('session-history');
-  const rows = [...faucetSessions].reverse().slice(0,8);
-  if (!rows.length) { el.innerHTML = '<div class="card-title">SESSION HISTORY</div><div style="color:var(--muted);font-size:12px">No sessions yet</div>'; return; }
-  el.innerHTML = '<div class="card-title">SESSION HISTORY</div>' +
-    rows.map(s=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:11px">
-      <span style="color:var(--muted)">${s.ts||''}</span>
-      <span style="color:var(--info)">${s.liters}L / ${s.gallons}gal</span>
-      <span style="color:var(--primary)">${s.flow}</span>
-    </div>`).join('');
-}
-
-// ─── Stats ────────────────────────────────────────────────────────────────────
-function renderStats() {
-  const cats = { compute:'🖥️ Compute', audio:'🎛️ Audio', lighting:'💡 Lighting', climate:'❄️ Climate' };
-  const breakdown = {};
-  devices.forEach(d => {
-    if (!breakdown[d.category]) breakdown[d.category] = { total:0, active:0 };
-    breakdown[d.category].total += d.watts;
-    if (d.active) breakdown[d.category].active += d.watts;
-  });
-  const max = getTotalWatts() || 1;
-  document.getElementById('stats-breakdown').innerHTML = '<div class="card-title">LOAD BY CATEGORY</div>' +
-    Object.entries(breakdown).map(([cat,v])=>`
-    <div class="stat-row">
-      <div class="stat-label">${cats[cat]||cat}</div>
-      <div class="stat-bar-bg"><div class="stat-bar-fill" style="width:${Math.round(v.active/max*100)}%;background:var(--primary)"></div></div>
-      <div class="stat-val" style="color:var(--primary)">${v.active}W</div>
-    </div>`).join('');
-  const total = getTotalWatts();
-  const costHr = (total/1000)*settings.costPerKwh;
-  document.getElementById('stats-cost').innerHTML = `<div class="card-title">COST ESTIMATOR</div>
-    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
-      <div class="metric-card"><div class="metric-label">PER HOUR</div><div class="metric-val">$${costHr.toFixed(4)}</div></div>
-      <div class="metric-card"><div class="metric-label">PER DAY</div><div class="metric-val">$${(costHr*24).toFixed(2)}</div></div>
-      <div class="metric-card"><div class="metric-label">PER WEEK</div><div class="metric-val">$${(costHr*24*7).toFixed(2)}</div></div>
-      <div class="metric-card"><div class="metric-label">PER MONTH</div><div class="metric-val">$${(costHr*24*30).toFixed(2)}</div></div>
-    </div>`;
-  document.getElementById('stats-table').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:12px">
-    <thead><tr style="color:var(--muted);font-size:10px;letter-spacing:1px">
-      <th style="text-align:left;padding:6px 0">DEVICE</th><th>WATTS</th><th>STATUS</th></tr></thead>
-    <tbody>${devices.map(d=>`<tr style="border-top:1px solid var(--border)">
-      <td style="padding:8px 0">${ICONS[d.icon]||'🔌'} ${d.name}</td>
-      <td style="text-align:center">${d.watts}</td>
-      <td style="text-align:center;color:${d.active?'var(--primary)':'var(--muted)'}">${d.active?'● ON':'○ OFF'}</td>
-    </tr>`).join('')}</tbody></table>`;
-}
-
-// ─── Footer ───────────────────────────────────────────────────────────────────
-function updateFooter() {
-  const total = getTotalWatts();
-  const costHr = (total/1000)*settings.costPerKwh;
-  document.getElementById('f-load').textContent  = `${total}W / ${settings.maxWatts}W`;
-  document.getElementById('f-cost').textContent  = `$${costHr.toFixed(3)}`;
-}
-
-// ─── Toast ────────────────────────────────────────────────────────────────────
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(()=>el.classList.remove('show'), 2500);
-}
-
-// ─── Socket.io realtime ───────────────────────────────────────────────────────
-const socket = io();
-socket.on('devices:update', updated => { devices = updated; renderDevices(); updateFooter(); });
-socket.on('settings:update', s => { settings = s; });
-
-// ─── Boot ─────────────────────────────────────────────────────────────────────
-checkExistingToken();
+document.getElementById('access-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') unlockDownload();
+});
 </script>
 </body>
 </html>
