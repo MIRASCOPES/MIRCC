@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Engineer Control Center — by MIRASCOPES</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a28;
+    --accent: #7c3aed;
+    --accent2: #a855f7;
+    --green: #22c55e;
+    --cyan: #06b6d4;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --border: rgba(124,58,237,0.25);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(124,58,237,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,58,237,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    padding: 1rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 100;
+  }
+  .logo { font-family:'Space Mono',monospace; font-size:1rem; font-weight:700; color:var(--accent2); letter-spacing:2px; }
+  .nav-badge { background:rgba(124,58,237,0.2); border:1px solid var(--border); padding:0.3rem 0.8rem; border-radius:100px; font-size:0.75rem; color:var(--accent2); font-family:'Space Mono',monospace; }
+
+  .hero {
+    position:relative; z-index:1;
+    padding:10rem 2rem 6rem;
+    text-align:center;
+    max-width:900px;
+    margin:0 auto;
+  }
+  .hero-tag { display:inline-block; background:rgba(124,58,237,0.15); border:1px solid var(--border); color:var(--accent2); padding:0.4rem 1rem; border-radius:100px; font-size:0.8rem; font-family:'Space Mono',monospace; letter-spacing:2px; margin-bottom:2rem; }
+  .hero h1 { font-size:clamp(2.5rem,7vw,5rem); font-weight:700; line-height:1.1; margin-bottom:1.5rem; background:linear-gradient(135deg,#fff 0%,var(--accent2) 60%,var(--cyan) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .hero p { font-size:1.2rem; color:var(--muted); max-width:600px; margin:0 auto 3rem; line-height:1.7; }
+
+  .features { position:relative; z-index:1; max-width:1100px; margin:0 auto; padding:4rem 2rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem; }
+  .feature-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:2rem; transition:transform 0.2s,border-color 0.2s; }
+  .feature-card:hover { transform:translateY(-4px); border-color:var(--accent); }
+  .feature-icon { font-size:2rem; margin-bottom:1rem; }
+  .feature-card h3 { font-size:1.1rem; font-weight:600; margin-bottom:0.5rem; }
+  .feature-card p { color:var(--muted); font-size:0.9rem; line-height:1.6; }
+
+  .pricing-section { position:relative; z-index:1; max-width:600px; margin:2rem auto; padding:2rem; text-align:center; }
+  .pricing-section h2 { font-size:2rem; font-weight:700; margin-bottom:0.5rem; }
+  .pricing-section .sub { color:var(--muted); margin-bottom:2.5rem; }
+
+  .price-card { background:var(--card); border:2px solid var(--accent); border-radius:24px; padding:3rem 2rem; position:relative; overflow:hidden; }
+  .price-card::before { content:''; position:absolute; top:-60px; left:50%; transform:translateX(-50%); width:200px; height:200px; background:radial-gradient(circle,rgba(124,58,237,0.3),transparent 70%); pointer-events:none; }
+  .best-tag { position:absolute; top:1rem; right:1rem; background:var(--accent); color:white; padding:0.3rem 0.8rem; border-radius:100px; font-size:0.75rem; font-weight:600; }
+
+  .price-amount { font-family:'Space Mono',monospace; font-size:3.5rem; font-weight:700; color:white; margin-bottom:0.25rem; }
+  .price-amount span { font-size:1.5rem; color:var(--muted); }
+  .price-desc { color:var(--muted); margin-bottom:2rem; font-size:0.95rem; }
+
+  .price-features { list-style:none; margin-bottom:2.5rem; text-align:left; }
+  .price-features li { padding:0.5rem 0; color:var(--text); font-size:0.95rem; display:flex; align-items:center; gap:0.75rem; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .price-features li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
+
+  .btn-buy { display:inline-block; width:100%; padding:1.1rem 2rem; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s,transform 0.1s; letter-spacing:0.5px; touch-action:manipulation; }
+  .btn-buy:hover { opacity:0.9; }
+  .btn-buy:active { transform:scale(0.98); }
+
+  .secure-note { margin-top:1rem; font-size:0.8rem; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:0.4rem; }
+
+  #download-section { display:none; margin-top:1.5rem; }
+  #download-section.visible { display:block; }
+  .unlock-box { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.4); border-radius:14px; padding:1.5rem; margin-bottom:1rem; text-align:center; }
+  .unlock-box h3 { color:var(--green); margin-bottom:0.5rem; font-size:1.1rem; }
+  .unlock-box p { color:var(--muted); font-size:0.9rem; }
+  .btn-download { display:inline-block; width:100%; padding:1rem 2rem; background:var(--green); color:#0a0a0f; font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s; touch-action:manipulation; }
+  .btn-download:hover { opacity:0.85; }
+
+  .key-form { margin-top:2rem; padding-top:2rem; border-top:1px solid var(--border); }
+  .key-form p { color:var(--muted); font-size:0.85rem; margin-bottom:0.75rem; }
+  .key-input-row { display:flex; gap:0.5rem; }
+  .key-input { flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white; padding:0.75rem 1rem; border-radius:10px; font-family:'Space Mono',monospace; font-size:0.9rem; outline:none; transition:border-color 0.2s; }
+  .key-input:focus { border-color:var(--accent); }
+  .btn-unlock { padding:0.75rem 1.25rem; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif; touch-action:manipulation; white-space:nowrap; }
+  .key-error { color:#f87171; font-size:0.8rem; margin-top:0.5rem; display:none; }
+
+  footer { position:relative; z-index:1; text-align:center; padding:3rem 2rem; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--border); margin-top:4rem; }
+  footer strong { color:var(--accent2); }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">MIRASCOPES</div>
+  <div class="nav-badge">ENG CONTROL CENTER</div>
+</nav>
+
+<section class="hero">
+  <div class="hero-tag">⚡ PROFESSIONAL ENGINEER TOOLKIT</div>
+  <h1>Your Studio.<br/>Under Control.</h1>
+  <p>A powerful local-first engineer control center. Manage devices, monitor energy, control your smart faucet — all from one dark HUD designed for digital pens.</p>
+</section>
+
+<section class="features">
+  <div class="feature-card">
+    <div class="feature-icon">🖊️</div>
+    <h3>Pen &amp; Stylus First</h3>
+    <p>Built for Surface Pen, Apple Pencil, Wacom and any digital stylus. Large targets, ink ripple effects, precision cursor.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>Energy Control Panel</h3>
+    <p>Monitor and toggle 10 studio devices. Real-time cost calculator, master on/off switch, live power tracking.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">💧</div>
+    <h3>Smart Faucet</h3>
+    <p>Live H₂O chemistry display, session tracking, and water flow control integrated directly in the HUD.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🔒</div>
+    <h3>Secure Auth</h3>
+    <p>QR code + personal key authentication. Session persists across tabs. Lock with one tap.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🚫💸</div>
+    <h3>Zero Server Costs</h3>
+    <p>Runs 100% on your local machine. All data stored in a local JSON file. No subscriptions, no cloud fees.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">📡</div>
+    <h3>Real-Time Sync</h3>
+    <p>WebSocket-powered live updates across all open tabs on your local network instantly.</p>
+  </div>
+</section>
+
+<section class="pricing-section">
+  <h2>Get the App</h2>
+  <p class="sub">One-time purchase. Yours forever.</p>
+
+  <div class="price-card">
+    <div class="best-tag">⚡ LIFETIME</div>
+
+    <div class="price-amount"><span>€</span>29</div>
+    <div class="price-desc">One-time · No subscription · Instant download</div>
+
+    <ul class="price-features">
+      <li>Full Engineer HUD app (Node.js + HTML)</li>
+      <li>Pen &amp; stylus optimized interface</li>
+      <li>Energy panel + smart faucet panel</li>
+      <li>Local backend — zero server costs</li>
+      <li>All future updates included</li>
+      <li>Windows, Mac &amp; Linux compatible</li>
+    </ul>
+
+    <a href="https://buy.stripe.com/REPLACE_WITH_YOUR_STRIPE_LINK" class="btn-buy" id="buy-btn">
+      Buy Now — €29
+    </a>
+
+    <div class="secure-note">🔒 Secure payment · You receive a download key by email</div>
+
+    <!-- Existing customers -->
+    <div class="key-form">
+      <p>Already purchased? Enter your access key:</p>
+      <div class="key-input-row">
+        <input class="key-input" id="access-key-input" type="text" placeholder="ENG-XXXXXX" maxlength="20"/>
+        <button class="btn-unlock" onclick="unlockDownload()">Unlock</button>
+      </div>
+      <div class="key-error" id="key-error">❌ Invalid key — check your purchase email.</div>
+    </div>
+
+    <!-- Revealed after valid key -->
+    <div id="download-section">
+      <div class="unlock-box">
+        <h3>✅ Access Granted!</h3>
+        <p>Your download is ready. Unzip and double-click START.bat to run.</p>
+      </div>
+      <a href="#" class="btn-download" id="download-btn">⬇️ Download Engineer Control Center</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  Built by <strong>MIRASCOPES</strong> · Engineer Control Center v2.0<br/>
+  <small style="opacity:0.5">Local-first · No cloud · Your data stays yours</small>
+</footer>
+
+<script>
+async function unlockDownload() {
+  const key = document.getElementById('access-key-input').value.trim().toUpperCase();
+  const errEl = document.getElementById('key-error');
+  errEl.style.display = 'none';
+  if (!key) return;
+
+  try {
+    const res = await fetch('/api/auth/verify', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key })
+    });
+    const data = await res.json();
+
+    if (data.valid) {
+      document.getElementById('download-section').classList.add('visible');
+      document.getElementById('download-btn').href = '/download?key=' + encodeURIComponent(key);
+      sessionStorage.setItem('eng_key', key);
+    } else {
+      errEl.style.display = 'block';
+    }
+  } catch(e) {
+    errEl.style.display = 'block';
+  }
+}
+
+// Restore if key was already entered this session
+const saved = sessionStorage.getItem('eng_key');
+if (saved) {
+  document.getElementById('access-key-input').value = saved;
+  unlockDownload();
+}
+
+document.getElementById('access-key-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') unlockDownload();
+});
+</script>
+</body>
+</html>
