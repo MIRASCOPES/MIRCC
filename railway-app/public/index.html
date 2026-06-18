@@ -1,4 +1,4 @@
-FFFH<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -88,180 +88,136 @@ FFFH<!DOCTYPE html>
   .price-features li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
 
   .btn-buy { display:inline-block; width:100%; padding:1.1rem 2rem; background:linear-gradient(135deg,var(--accent),var(--accent2)); color:white; font-family:'Space Grotesk',sans-serif; font-size:1.1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s,transform 0.1s; letter-spacing:0.5px; touch-action:manipulation; }
-  .btn-buy:hover { opacity:0.9; }
-  .btn-buy:active { transform:scale(0.98); }
+  .btn-buy:hover { opacity:0.9; transform:translateY(-1px); }
 
-  .secure-note { margin-top:1rem; font-size:0.8rem; color:var(--muted); display:flex; align-items:center; justify-content:center; gap:0.4rem; }
-
-  #download-section { display:none; margin-top:1.5rem; }
-  #download-section.visible { display:block; }
-  .unlock-box { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.4); border-radius:14px; padding:1.5rem; margin-bottom:1rem; text-align:center; }
-  .unlock-box h3 { color:var(--green); margin-bottom:0.5rem; font-size:1.1rem; }
-  .unlock-box p { color:var(--muted); font-size:0.9rem; }
-  .btn-download { display:inline-block; width:100%; padding:1rem 2rem; background:var(--green); color:#0a0a0f; font-family:'Space Grotesk',sans-serif; font-size:1rem; font-weight:700; border:none; border-radius:14px; cursor:pointer; text-decoration:none; transition:opacity 0.2s; touch-action:manipulation; }
+  /* Download section — hidden by default, shown after payment */
+  #download-section {
+    display: none;
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(34,197,94,0.1);
+    border: 1px solid rgba(34,197,94,0.4);
+    border-radius: 16px;
+    text-align: center;
+  }
+  #download-section h3 { color: var(--green); margin-bottom: 0.5rem; font-size:1.3rem; }
+  #download-section p { color: var(--muted); margin-bottom: 1.5rem; font-size:0.9rem; }
+  .btn-download { display:inline-block; padding:1rem 2.5rem; background:var(--green); color:#000; font-weight:700; font-size:1rem; border-radius:12px; text-decoration:none; transition:opacity 0.2s; }
   .btn-download:hover { opacity:0.85; }
 
-  .key-form { margin-top:2rem; padding-top:2rem; border-top:1px solid var(--border); }
-  .key-form p { color:var(--muted); font-size:0.85rem; margin-bottom:0.75rem; }
-  .key-input-row { display:flex; gap:0.5rem; }
-  .key-input { flex:1; background:rgba(255,255,255,0.05); border:1px solid var(--border); color:white; padding:0.75rem 1rem; border-radius:10px; font-family:'Space Mono',monospace; font-size:0.9rem; outline:none; transition:border-color 0.2s; }
-  .key-input:focus { border-color:var(--accent); }
-  .btn-unlock { padding:0.75rem 1.25rem; background:var(--accent); color:white; border:none; border-radius:10px; font-weight:600; cursor:pointer; font-family:'Space Grotesk',sans-serif; touch-action:manipulation; white-space:nowrap; }
-  .key-error { color:#f87171; font-size:0.8rem; margin-top:0.5rem; display:none; }
-
   footer { position:relative; z-index:1; text-align:center; padding:3rem 2rem; color:var(--muted); font-size:0.85rem; border-top:1px solid var(--border); margin-top:4rem; }
-  footer strong { color:var(--accent2); }
 </style>
 </head>
 <body>
 
 <nav>
-  <div class="logo">MIRASCOPES</div>
-  <div class="nav-badge">ENG CONTROL CENTER</div>
+  <div class="logo">MIRCC</div>
+  <div class="nav-badge">v2.0 STABLE</div>
 </nav>
 
 <section class="hero">
-  <div class="hero-tag">⚡ PROFESSIONAL ENGINEER TOOLKIT</div>
-  <h1>Your Studio.<br/>Under Control.</h1>
-  <p>A powerful local-first engineer control center. Manage devices, monitor energy, control your smart faucet — all from one dark HUD designed for digital pens.</p>
+  <div class="hero-tag">⚡ ENGINEER CONTROL CENTER</div>
+  <h1>Control Everything.<br/>From Anywhere.</h1>
+  <p>A professional-grade control panel built for engineers. Monitor devices, track energy, manage systems — all in one sleek interface.</p>
 </section>
 
 <section class="features">
   <div class="feature-card">
-    <div class="feature-icon">🖊️</div>
-    <h3>Pen &amp; Stylus First</h3>
-    <p>Built for Surface Pen, Apple Pencil, Wacom and any digital stylus. Large targets, ink ripple effects, precision cursor.</p>
+    <div class="feature-icon">📊</div>
+    <h3>Live Monitoring</h3>
+    <p>Real-time stats for all connected devices. Pressure, flow, energy — always up to date.</p>
   </div>
   <div class="feature-card">
     <div class="feature-icon">⚡</div>
-    <h3>Energy Control Panel</h3>
-    <p>Monitor and toggle 10 studio devices. Real-time cost calculator, master on/off switch, live power tracking.</p>
+    <h3>Energy Panel</h3>
+    <p>Track power consumption and optimize usage across your entire operation.</p>
   </div>
   <div class="feature-card">
-    <div class="feature-icon">💧</div>
-    <h3>Smart Faucet</h3>
-    <p>Live H₂O chemistry display, session tracking, and water flow control integrated directly in the HUD.</p>
+    <div class="feature-icon">🚰</div>
+    <h3>Faucet & Flow Control</h3>
+    <p>Precise control over water systems with instant feedback and alerts.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🖊️</div>
+    <h3>Pen & Touch Optimized</h3>
+    <p>Designed for stylus and touch use. Large targets, smooth ink input, zero friction.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🌐</div>
+    <h3>Works Anywhere</h3>
+    <p>Cloud-hosted and accessible from any device — tablet, phone, or desktop.</p>
   </div>
   <div class="feature-card">
     <div class="feature-icon">🔒</div>
-    <h3>Secure Auth</h3>
-    <p>QR code + personal key authentication. Session persists across tabs. Lock with one tap.</p>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">🚫💸</div>
-    <h3>Zero Server Costs</h3>
-    <p>Runs 100% on your local machine. All data stored in a local JSON file. No subscriptions, no cloud fees.</p>
-  </div>
-  <div class="feature-card">
-    <div class="feature-icon">📡</div>
-    <h3>Real-Time Sync</h3>
-    <p>WebSocket-powered live updates across all open tabs on your local network instantly.</p>
+    <h3>Secure Access</h3>
+    <p>Personal key authentication. Session persists across tabs. Lock with one tap.</p>
   </div>
 </section>
 
 <section class="pricing-section">
-  <h2>Get the App</h2>
-  <p class="sub">One-time purchase. Yours forever.</p>
+  <h2>One-Time Purchase</h2>
+  <p class="sub">Pay once, own it forever. No subscriptions.</p>
 
   <div class="price-card">
-    <div class="best-tag">⚡ LIFETIME</div>
-
-    <div class="price-amount"><span>€</span>29</div>
-    <div class="price-desc">One-time · No subscription · Instant download</div>
-
+    <div class="best-tag">⭐ BEST VALUE</div>
+    <div class="price-amount">€29<span> /one-time</span></div>
+    <p class="price-desc">Full lifetime access — all updates included</p>
     <ul class="price-features">
-      <li>Full Engineer HUD app (Node.js + HTML)</li>
-      <li>Pen &amp; stylus optimized interface</li>
-      <li>Energy panel + smart faucet panel</li>
-      <li>Local backend — zero server costs</li>
-      <li>All future updates included</li>
-      <li>Windows, Mac &amp; Linux compatible</li>
+      <li>Full Engineer Control Center app</li>
+      <li>All monitoring panels included</li>
+      <li>Pen & touch optimized UI</li>
+      <li>Cloud access from any device</li>
+      <li>Free updates forever</li>
+      <li>Instant download after payment</li>
     </ul>
 
+    <!-- Buy button — replace the href with your Stripe payment link -->
     <a href="https://buy.stripe.com/dRm5kDcbB5FS9xN51V2cg00" class="btn-buy" id="buy-btn">
       Buy Now — €29
     </a>
 
-    <div class="secure-note">🔒 Secure payment · You receive a download key by email</div>
-
-    <!-- Existing customers -->
-    <div class="key-form">
-      <p>Already purchased? Enter your access key:</p>
-      <div class="key-input-row">
-        <input class="key-input" id="access-key-input" type="text" placeholder="ENG-XXXXXX" maxlength="20"/>
-        <button class="btn-unlock" onclick="unlockDownload()">Unlock</button>
-      </div>
-      <div class="key-error" id="key-error">❌ Invalid key — check your purchase email.</div>
-    </div>
-
-    <!-- Revealed after valid key -->
+    <!-- This section appears automatically after payment -->
     <div id="download-section">
-      <div class="unlock-box">
-        <h3>✅ Access Granted!</h3>
-        <p>Your download is ready. Unzip and double-click START.bat to run.</p>
-      </div>
-      <a href="#" class="btn-download" id="download-btn">⬇️ Download Engineer Control Center</a>
+      <h3>✅ Payment confirmed!</h3>
+      <p>Your download is ready. Thank you for your purchase!</p>
+      <a href="/download" class="btn-download" id="download-link">⬇️ Download Engineer Control Center</a>
     </div>
   </div>
 </section>
 
 <footer>
-  Built by <strong>MIRASCOPES</strong> · Engineer Control Center v2.0<br/>
-  <small style="opacity:0.5">Local-first · No cloud · Your data stays yours</small>
+  <p>© 2026 MIRASCOPES — Engineer Control Center</p>
 </footer>
 
 <script>
-async function unlockDownload() {
-  const key = document.getElementById('access-key-input').value.trim().toUpperCase();
-  const errEl = document.getElementById('key-error');
-  errEl.style.display = 'none';
+// Automatically detect if customer is returning from Stripe payment
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const key = params.get('key');
   if (!key) return;
 
-  try {
-    const res = await fetch('/api/auth/verify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key })
-    });
-    const data = await res.json();
-
-    if (data.valid) {
-      document.getElementById('download-section').classList.add('visible');
-      document.getElementById('download-btn').href = '/download?key=' + encodeURIComponent(key);
-      sessionStorage.setItem('eng_key', key);
-      // Scroll to download
-      document.getElementById('download-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      errEl.style.display = 'block';
+  // Verify key with server
+  fetch('/api/auth/verify', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.ok) {
+      // Hide buy button, show download
+      document.getElementById('buy-btn').style.display = 'none';
+      const dl = document.getElementById('download-section');
+      dl.style.display = 'block';
+      // Pass key to download route
+      document.getElementById('download-link').href = '/download?key=' + encodeURIComponent(key);
+      // Clean URL
+      window.history.replaceState({}, '', '/');
     }
-  } catch(e) {
-    errEl.style.display = 'block';
-  }
-}
-
-// ── Auto-unlock if Stripe redirected back with ?key=ENG-XXXXX ────────────────
-(function autoFillFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  const urlKey = params.get('key');
-  if (urlKey) {
-    document.getElementById('access-key-input').value = urlKey;
-    // Small delay so page is fully rendered
-    setTimeout(unlockDownload, 400);
-    // Clean the key from the URL bar (looks nicer)
-    window.history.replaceState({}, '', '/');
-  }
+  })
+  .catch(() => {});
 })();
-
-// Restore if key was already entered this session
-const saved = sessionStorage.getItem('eng_key');
-if (saved && !new URLSearchParams(window.location.search).get('key')) {
-  document.getElementById('access-key-input').value = saved;
-  unlockDownload();
-}
-
-document.getElementById('access-key-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') unlockDownload();
-});
 </script>
+
 </body>
 </html>
