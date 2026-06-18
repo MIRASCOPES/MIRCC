@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+FFFH<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
@@ -178,7 +178,7 @@
       <li>Windows, Mac &amp; Linux compatible</li>
     </ul>
 
-    <a href="https://buy.stripe.com/REPLACE_WITH_YOUR_STRIPE_LINK" class="btn-buy" id="buy-btn">
+    <a href="https://buy.stripe.com/dRm5kDcbB5FS9xN51V2cg00" class="btn-buy" id="buy-btn">
       Buy Now — €29
     </a>
 
@@ -229,6 +229,8 @@ async function unlockDownload() {
       document.getElementById('download-section').classList.add('visible');
       document.getElementById('download-btn').href = '/download?key=' + encodeURIComponent(key);
       sessionStorage.setItem('eng_key', key);
+      // Scroll to download
+      document.getElementById('download-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       errEl.style.display = 'block';
     }
@@ -237,9 +239,22 @@ async function unlockDownload() {
   }
 }
 
+// ── Auto-unlock if Stripe redirected back with ?key=ENG-XXXXX ────────────────
+(function autoFillFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  const urlKey = params.get('key');
+  if (urlKey) {
+    document.getElementById('access-key-input').value = urlKey;
+    // Small delay so page is fully rendered
+    setTimeout(unlockDownload, 400);
+    // Clean the key from the URL bar (looks nicer)
+    window.history.replaceState({}, '', '/');
+  }
+})();
+
 // Restore if key was already entered this session
 const saved = sessionStorage.getItem('eng_key');
-if (saved) {
+if (saved && !new URLSearchParams(window.location.search).get('key')) {
   document.getElementById('access-key-input').value = saved;
   unlockDownload();
 }

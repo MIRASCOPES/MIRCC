@@ -87,14 +87,9 @@
     padding: 32px 28px; width: min(92vw, 400px); display: flex; flex-direction: column; gap: 20px; }
   .auth-title { font-size: 16px; font-weight: 700; color: var(--primary); text-align: center; letter-spacing: 2px; }
   .auth-sub { font-size: 11px; color: var(--muted); text-align: center; }
-  .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .auth-tab { height: 44px; border-radius: 10px; border: 1.5px solid var(--border);
-    background: var(--bg2); color: var(--muted); font-family: var(--font); font-size: 12px;
-    font-weight: 600; cursor: pointer; letter-spacing: 1px; transition: all 0.15s; }
-  .auth-tab.active { border-color: var(--primary); color: var(--primary); background: rgba(0,255,136,0.08); }
-  .qr-wrap { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  #qr-img { border-radius: 12px; border: 2px solid var(--border); width: 200px; height: 200px; }
-  .qr-countdown { font-size: 11px; color: var(--muted); }
+  .qr-wrap { display: none; }
+  #qr-img { display: none; }
+  .qr-countdown { display: none; }
   .key-input { width: 100%; height: 56px; background: var(--bg2); border: 1.5px solid var(--border);
     border-radius: var(--pen-radius); color: #e6edf3; font-family: var(--font); font-size: 15px;
     font-weight: 700; padding: 0 16px; letter-spacing: 3px; text-transform: uppercase;
@@ -193,19 +188,8 @@
   <div class="auth-box">
     <div class="auth-title">⚡ ENGINEER HUD</div>
     <div class="auth-sub">Authenticate to access the control center</div>
-    <div class="auth-tabs">
-      <button class="auth-tab active ripple-host" onclick="switchAuthTab('qr')" id="tab-qr">📷 QR CODE</button>
-      <button class="auth-tab ripple-host" onclick="switchAuthTab('key')" id="tab-key">🔑 AUTH KEY</button>
-    </div>
-    <!-- QR Tab -->
-    <div id="qr-pane" class="qr-wrap">
-      <img id="qr-img" src="" alt="Loading QR..."/>
-      <div class="qr-countdown" id="qr-timer">Refreshes in 30s</div>
-      <button class="btn btn-sm ripple-host" onclick="loadQR()">🔄 Refresh QR</button>
-      <div class="auth-sub">Scan with your phone's camera or any QR app</div>
-    </div>
-    <!-- Key Tab -->
-    <div id="key-pane" style="display:none; flex-direction:column; gap:12px;">
+    <!-- Key Auth -->
+    <div id="key-pane" style="display:flex; flex-direction:column; gap:12px;">
       <input class="key-input" id="key-input" type="text" placeholder="Enter your ENG-XXXXXX key"
         maxlength="10" onkeydown="if(event.key==='Enter')verifyKey()"/>
       <button class="btn btn-primary btn-full ripple-host" onclick="verifyKey()">🔓 AUTHENTICATE</button>
@@ -312,7 +296,6 @@ let faucetOn = false, faucetInterval = null, faucetSeconds = 0;
 let totalLiters = 0;
 const FLOW = { slow: 1.5/60, normal: 8/60, fast: 20/60 }; // L/s
 let curFlow = 'normal';
-let qrInterval = null, qrCountdown = 30;
 let faucetSessions = [];
 
 // ─── Pen ripple ────────────────────────────────────────────────────────────────
@@ -338,26 +321,6 @@ async function api(method, path, body) {
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
-async function loadQR() {
-  const res = await fetch('/api/auth/qr');
-  const data = await res.json();
-  document.getElementById('qr-img').src = data.qr;
-  qrCountdown = 30;
-  clearInterval(qrInterval);
-  qrInterval = setInterval(() => {
-    qrCountdown--;
-    document.getElementById('qr-timer').textContent = `Refreshes in ${qrCountdown}s`;
-    if (qrCountdown <= 0) loadQR();
-  }, 1000);
-}
-
-function switchAuthTab(tab) {
-  document.getElementById('qr-pane').style.display  = tab==='qr'  ? 'flex' : 'none';
-  document.getElementById('key-pane').style.display = tab==='key' ? 'flex' : 'none';
-  document.getElementById('tab-qr').classList.toggle('active',  tab==='qr');
-  document.getElementById('tab-key').classList.toggle('active', tab==='key');
-}
-
 async function verifyKey() {
   const key = document.getElementById('key-input').value.trim();
   if (!key) return;
@@ -374,12 +337,12 @@ async function verifyKey() {
 }
 
 async function checkExistingToken() {
-  if (!token) { loadQR(); return; }
+  if (!token) { return; }
   try {
     const d = await api('GET', '/api/devices');
     if (Array.isArray(d)) { onAuthenticated(); return; }
   } catch {}
-  token = ''; sessionStorage.removeItem('eng_token'); loadQR();
+  token = ''; sessionStorage.removeItem('eng_token');
 }
 
 async function onAuthenticated() {
