@@ -11,7 +11,6 @@
 const express    = require('express');
 const http       = require('http');
 const { Server } = require('socket.io');
-const QRCode     = require('qrcode');
 const { v4: uuidv4 } = require('uuid');
 const cors       = require('cors');
 const path       = require('path');
@@ -93,39 +92,10 @@ app.get('/app', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'app.html'));
 });
 
-// ─── Auth ─────────────────────────────────────────────────────────────────────
-app.get('/api/auth/qr', async (req, res) => {
-  const key    = state.authKey;
-  // QR encodes the landing page — visitors see the site and can purchase/download
-  const qrData = `${PUBLIC_URL}`;
-  try {
-    const qrImage = await QRCode.toDataURL(qrData, {
-      width: 280, margin: 2,
-      color: { dark: '#00ff88', light: '#111827' },
-    });
-    res.json({ qr: qrImage, key, expiresIn: 30, url: PUBLIC_URL });
-  } catch (e) {
-    res.status(500).json({ error: 'QR generation failed' });
-  }
-});
-
+// ─── Auth (disabled — open access) ───────────────────────────────────────────
 app.post('/api/auth/verify', (req, res) => {
-  const { key } = req.body;
-  if (!key) return res.status(400).json({ ok: false, valid: false, error: 'No key provided' });
-
-  // Download keys: comma-separated list in DOWNLOAD_KEYS env var
-  const downloadKeys = (process.env.DOWNLOAD_KEYS || state.authKey)
-    .split(',').map(k => k.trim().toUpperCase());
-  const isValid = downloadKeys.includes(key.trim().toUpperCase());
-
-  if (isValid) {
-    const token = uuidv4();
-    state.sessions.push({ token, createdAt: Date.now() });
-    saveState(state);
-    res.json({ ok: true, valid: true, token });
-  } else {
-    res.status(401).json({ ok: false, valid: false, error: 'Invalid key' });
-  }
+  // Auth removed — always grant access
+  res.json({ ok: true, valid: true, token: uuidv4() });
 });
 
 // ─── Download (protected by valid purchase key) ───────────────────────────────
@@ -145,26 +115,12 @@ app.get('/download', (req, res) => {
   res.download(zipPath, 'engineer-control-center.zip');
 });
 
-app.post('/api/auth/refresh-key', requireAuth, (req, res) => {
-  // Don't overwrite AUTH_KEY env var — only refresh in-memory/file state
-  state.authKey = 'ENG-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-  state.sessions = [];
-  saveState(state);
-  res.json({ ok: true, newKey: state.authKey });
-});
-
-function requireAuth(req, res, next) {
-  const token = req.headers['x-auth-token'];
-  if (state.sessions.find(s => s.token === token)) return next();
-  res.status(403).json({ error: 'Unauthorized' });
-}
-
 // ─── Devices ──────────────────────────────────────────────────────────────────
-app.get('/api/devices', requireAuth, (req, res) => {
+app.get('/api/devices', (req, res) => {
   res.json(state.devices);
 });
 
-app.patch('/api/devices/:id', requireAuth, (req, res) => {
+app.patch('/api/devices/:id', (req, res) => {
   const { id } = req.params;
   const { active } = req.body;
   const device = state.devices.find(d => d.id === id);
@@ -175,7 +131,7 @@ app.patch('/api/devices/:id', requireAuth, (req, res) => {
   res.json(device);
 });
 
-app.post('/api/devices/all', requireAuth, (req, res) => {
+app.post('/api/devices/all', (req, res) => {
   const { active } = req.body;
   state.devices.forEach(d => d.active = active);
   saveState(state);
@@ -184,11 +140,11 @@ app.post('/api/devices/all', requireAuth, (req, res) => {
 });
 
 // ─── Faucet ───────────────────────────────────────────────────────────────────
-app.get('/api/faucet/sessions', requireAuth, (req, res) => {
+app.get('/api/faucet/sessions', (req, res) => {
   res.json(state.faucetSessions.slice(-20));
 });
 
-app.post('/api/faucet/sessions', requireAuth, (req, res) => {
+app.post('/api/faucet/sessions', (req, res) => {
   const session = { ...req.body, id: uuidv4(), savedAt: Date.now() };
   state.faucetSessions.push(session);
   if (state.faucetSessions.length > 50) state.faucetSessions.shift();
@@ -197,11 +153,11 @@ app.post('/api/faucet/sessions', requireAuth, (req, res) => {
 });
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
-app.get('/api/settings', requireAuth, (req, res) => {
+app.get('/api/settings', (req, res) => {
   res.json(state.settings);
 });
 
-app.patch('/api/settings', requireAuth, (req, res) => {
+app.patch('/api/settings', (req, res) => {
   Object.assign(state.settings, req.body);
   saveState(state);
   io.emit('settings:update', state.settings);
